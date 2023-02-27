@@ -11,7 +11,7 @@ import UserLogin from './components/User Login/Userlogin';
 import ContactPage from './components/Contact Page/ContactPage';
 import { HashRouter, Switch, Route} from 'react-router-dom';
 import CategoryPage from './components/Category Page/CategoryPage';
-
+import { UserRegistration } from './components/User Registration/User.registration';
 
 
 const mainMenuItems = [
@@ -21,6 +21,7 @@ const mainMenuItems = [
   new MainMenuItem("Cat 4", '/category/4'),
   new MainMenuItem("Cat 21", '/category/21'),
   new MainMenuItem("Cat 7", '/category/7'),
+  new MainMenuItem("Create account", '/user/registration'),
 ]
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -37,6 +38,7 @@ root.render(
         <Route path='/contact' component={ContactPage} />
         <Route path='/login' component={UserLogin} />
         <Route path='/category/:cId' component={CategoryPage}/>
+        <Route path='/user/registration' component={UserRegistration}/>
       </Switch> 
       
     </HashRouter>

@@ -1,4 +1,4 @@
-import { faPhone, faSignInAlt } from '@fortawesome/free-solid-svg-icons';
+import { faSignInAlt } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
 import { Container, Card, Col, Form, Button, Alert } from 'react-bootstrap';
@@ -28,6 +28,7 @@ export class UserLogin extends React.Component {
 
 
     private doLogin() {
+        console.log(this.state)
         api('/auth/Administrator/login/user', 'post',
             {
             email: this.state.email,
