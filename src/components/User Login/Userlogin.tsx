@@ -28,7 +28,7 @@ export class UserLogin extends React.Component {
 
 
     private doLogin() {
-        console.log(this.state)
+      //  console.log(this.state)
         api('/auth/Administrator/login/user', 'post',
             {
             email: this.state.email,
