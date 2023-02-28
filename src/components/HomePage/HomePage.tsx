@@ -37,8 +37,9 @@ class HomePage extends React.Component {
   }
   
   private getCategories() {
-    api("/api/category", "get", {})
+    api("/api/category/?filter=parentCategoryId||$isnull", "get", {})
       .then((res: ApiResponse) => {
+  
         if (res.status !== 'ok') {
           this.setLoggined(false);
           return;
@@ -49,7 +50,7 @@ class HomePage extends React.Component {
 
   private setDataInState(data: CategoryApiDTO[]) {
 
-    const newCategories: CategoryTypes[] = data.map(category => {return({ categoryId: category.categoryId, name: category.name, items: [], })});
+    const newCategories: CategoryTypes[] = data.map(category => {return({ categoryId: category.categoryId, name: category.name})});
     
     const newState = Object.assign(this.state, {    
         categories: newCategories

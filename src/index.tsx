@@ -18,9 +18,6 @@ const mainMenuItems = [
   new MainMenuItem("Home", '/'),
   new MainMenuItem("Contact", '/contact'),
   new MainMenuItem("Log in", '/login'),
-  new MainMenuItem("Cat 4", '/category/4'),
-  new MainMenuItem("Cat 21", '/category/21'),
-  new MainMenuItem("Cat 7", '/category/7'),
   new MainMenuItem("Create account", '/user/registration'),
 ]
 const root = ReactDOM.createRoot(
