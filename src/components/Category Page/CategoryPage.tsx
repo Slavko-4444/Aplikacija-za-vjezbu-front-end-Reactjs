@@ -33,8 +33,17 @@ interface CategoryPageState {
         priceMin: number;
         priceMax: number;
         orderBy: "name asc" | "name desc" | "price asc" | "price desc";
+        selectedFeatures: {
+            featureId: number;
+            value: string;
+        }[],
 
-    }
+    },
+    features: {
+        featureId: number;
+        name: string;
+        values: string[];
+    }[];
 }
 
 interface CategoryDto {
@@ -64,8 +73,9 @@ export class CategoryPage extends React.Component<CategoryPageProps> {
                 priceMin: 0.01,
                 priceMax: Number.MAX_SAFE_INTEGER,
                 orderBy: "price asc", 
-
-            }
+                selectedFeatures: [], 
+            },
+            features: [],
         };
     }
     render() {
@@ -125,7 +135,10 @@ export class CategoryPage extends React.Component<CategoryPageProps> {
                         <option value="price desc">Sort by price - discending</option>
                     </Form.Control>
                 </Form.Group>
-                <br/>
+                <br />
+
+                {this.state.features.map(this.printFeatureFilterComponent, this)}
+
                 <Form.Group>
                     <button type="button" className="btn btn-primary col-12" onClick={() => this.applyFilters()} ><FontAwesomeIcon icon={faSearch}/>Search</button>
                 </Form.Group>
@@ -133,6 +146,25 @@ export class CategoryPage extends React.Component<CategoryPageProps> {
         )
     }
 
+    private printFeatureFilterComponent(feature: { featureId: number; name: string; values: string[]; }) {
+
+        return (
+        <>
+            <Form.Group>
+            <Form.Label><strong>{feature.name}</strong>:</Form.Label>
+                    {feature.values.map(value => this.printFeatureFilterChecker(feature, value), this)}      
+            </Form.Group>
+        </>)}
+    
+    private printFeatureFilterChecker(feature: any, value: string) {
+        return(
+            <Form.Check type='checkbox' label={value} value={value}
+                        data-feature-id={feature.featureId}
+                        onChange={e=> this.feautureOnChange(e as any)}/>
+        )
+        
+    }
+ 
     private printOptionalMessage() {
         if (this.state.message === '')
             return;
@@ -202,6 +234,41 @@ export class CategoryPage extends React.Component<CategoryPageProps> {
         );
     }
 
+    private feautureOnChange(event: React.ChangeEvent<HTMLInputElement>) {
+        const featureId = Number( event.target.dataset.featureId);
+        const value = event.target.value;
+        if (event.target.checked) {
+            this.addFilterFeatureValue(featureId, value);
+        }
+        else {
+            this.removeFilterFeatureValue(featureId, value);
+        }
+       
+    }
+    
+    private addFilterFeatureValue(featureId: number, value: string) {
+        
+        const newSelectedFeatures = [...this.state.filters.selectedFeatures];
+        newSelectedFeatures.push({ featureId: featureId, value: value });
+        this.UpdateSelectedFiltersInState(newSelectedFeatures);
+    }
+
+    private removeFilterFeatureValue(featureId: number, value: string) {
+        const newSelectedFeatures = this.state.filters.selectedFeatures.filter(record => {
+            return !(record.featureId === featureId && record.value === value);
+        })
+        this.UpdateSelectedFiltersInState(newSelectedFeatures);
+    }
+    
+    private UpdateSelectedFiltersInState(newSelectedFeatures: any) {
+        this.setState(Object.assign(this.state, {
+            filters: Object.assign(this.state.filters, {
+                selectedFeatures: newSelectedFeatures,
+            })
+        }))
+    
+    }
+
     private filterOrderChange(event: React.ChangeEvent<HTMLSelectElement>) {
         const newFilter = Object.assign(this.state.filters, {
             orderBy: event.target.value,
@@ -217,8 +284,12 @@ export class CategoryPage extends React.Component<CategoryPageProps> {
         return this.setState(Object.assign(this.state, { filters: newFilter }));
     }
 
+    private setFeatures(event: any) {
+        return this.setState(Object.assign(this.state, { features: event }));
+    }
+
     private applyFilters() {
-        console.log(this.state.filters)
+       console.log(this.state)
        this.getCategoryData();
     }
 
@@ -293,13 +364,35 @@ export class CategoryPage extends React.Component<CategoryPageProps> {
         const orderParts = this.state.filters.orderBy.split(' ');
         const orderBy = orderParts[0];
         const orderDirection = orderParts[1].toUpperCase();
+        const featureFilters: any[] = [];
+
+        for (const item of this.state.filters.selectedFeatures) {
+            let found = false;
+            let foundRef = null;
+
+            for (const featureFilter of featureFilters) {
+                if (featureFilter.featureId === item.featureId) {
+                    found = true;
+                    foundRef = featureFilter;
+                    break;
+                }
+            }
+            if (!found) {
+                featureFilters.push({
+                    featureId: item.featureId,
+                    values: [item.value],
+                })
+            } else {
+                foundRef.values.push(item.value);
+            }
+        }
 
         api('/api/article/search', 'post', {
             categoryId: Number(this.props.match.params.cId),
             keywords: this.state.filters.keywords,
             priceMin: this.state.filters.priceMin,
             priceMax: Number(this.state.filters.priceMax),
-            features: [],
+            features: featureFilters,
             orderBy: orderBy,
             orderDirection: orderDirection
         }).then((res: ApiResponse) => {
@@ -318,7 +411,7 @@ export class CategoryPage extends React.Component<CategoryPageProps> {
             
             const articles: ArticleType[] = res.data.map(this.FillArticleType);
             this.setItems(articles);
-
+            this.getFeatures();
         })
     }
 
@@ -338,6 +431,24 @@ export class CategoryPage extends React.Component<CategoryPageProps> {
             object.price = article.articlePrices[article.articlePrices.length - 1].price;
         
         return object;
+    }
+
+    private getFeatures() {
+        api('api/feature/values/' + this.props.match.params.cId, 'get', {})
+            .then((res: ApiResponse) => {
+
+                if (res.status === 'login Error')
+                    return this.setLoggined(false);
+            
+                else if (res.status === 'service Error')
+                    return this.setErrorMessage("Bad search " + "Please try to refresh page. ");
+                if (res.data.errorStatus === 0) {
+                    this.setErrorMessage("");
+                    return;
+                }
+
+                this.setFeatures(res.data.features);
+            })
     }
 } 
 
