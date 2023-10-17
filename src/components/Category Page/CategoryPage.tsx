@@ -7,6 +7,7 @@ import api, { ApiResponse } from '../../api/api'
 import ArticleType from '../../types/ArticleType';
 import { Link, Redirect } from 'react-router-dom';
 import { ApiConfig } from '../../config/api.config';
+import SingleArticlePreview from '../Single Article Preview/SingleArticlePreview';
 
 interface ArticleDto {
     articleId: number;
@@ -187,26 +188,7 @@ export class CategoryPage extends React.Component<CategoryPageProps> {
     }
     
     private singleArticle(artc: ArticleType) {
-        return (
-            <Col lg="3" md="4" sm="6" xs="12">
-                <Card className='mb-3'>
-                    <Card.Header>
-                        <img alt={artc.imagePath} src={ApiConfig.PHOTO_PATH + "small/" + artc.imagePath}
-                        className="w-100"/>
-                    </Card.Header>
-                    <Card.Body>
-                        <Card.Title as="p"><strong>{artc.name}</strong></Card.Title>
-                        <Card.Text>
-                            {artc.excerpt}
-                        </Card.Text>
-                        <Card.Text>
-                            Price: {Number(artc.price).toFixed(2)} EUR
-                        </Card.Text>
-                        <Link to={`/article/${artc.articleId}`} className="btn btn-primary btn-block btn-sm" >Open article page</Link>
-                    </Card.Body>
-                </Card>
-            </Col>
-        ); 
+        return (<SingleArticlePreview article={artc}/>); 
     }
 
     private showSubcategories() {
